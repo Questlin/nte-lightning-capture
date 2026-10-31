@@ -33,7 +33,7 @@ Settings are saved to `%APPDATA%\NTELightningCapture\config.json` on Windows.
 
 A test build for Apple Silicon Macs (M1 or later, macOS 14 or newer, the same Macs NTE's Mac client runs on) is on the [Releases](../../releases) page as a **pre-release**: `NTELightningCapture-mac.zip`. It has not been tried with the game much yet.
 
-1. **Install.** Unzip it and drag **NTE Lightning Capture.app** to Applications.
+1. **Install.** Unzip it. The folder holds the app and **Read Me First.txt**, which has these steps in more detail. Drag **NTE Lightning Capture.app** to Applications.
 2. **First launch.** The app isn't signed with an Apple Developer ID, so macOS says it can't verify it. Click **Done**, open System Settings > Privacy & Security, scroll down and click **Open Anyway** next to the message about NTE Lightning Capture, then confirm. (Or in Terminal: `xattr -dr com.apple.quarantine "/Applications/NTE Lightning Capture.app"`.)
 3. **Permissions.** macOS asks for three. Allow each one in System Settings > Privacy & Security, then quit and reopen the app:
    - **Screen & System Audio Recording**, so the app can see the game.

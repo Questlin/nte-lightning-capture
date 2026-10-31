@@ -3,7 +3,7 @@
 
 **Test build for Mac.** For Apple Silicon Macs (M1 or later) with macOS 14 or newer. It has not been tried with the game much yet. The Windows app is in the latest regular release.
 
-1. Download `NTELightningCapture-mac.zip`, unzip it and drag **NTE Lightning Capture.app** to Applications.
+1. Download `NTELightningCapture-mac.zip` and unzip it. The folder holds the app and **Read Me First.txt** with these steps in more detail (also attached below as `Read-Me-Mac.txt`). Drag **NTE Lightning Capture.app** to Applications.
 2. Open it. macOS says it can't verify the app (it isn't signed with an Apple Developer ID). Click **Done**, then go to System Settings > Privacy & Security, click **Open Anyway** next to the message about NTE Lightning Capture, and confirm.
 3. Allow **Screen & System Audio Recording**, **Accessibility** and **Input Monitoring** for the app in System Settings > Privacy & Security, then quit and reopen it. The app's log lists any that are still missing.
 4. Select regions, switch to the game, and press **fn+F6** to arm.

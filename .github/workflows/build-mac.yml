@@ -41,7 +41,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: NTELightningCapture-mac
-          path: dist/NTELightningCapture-mac.zip
+          path: |
+            dist/NTELightningCapture-mac.zip
+            packaging/mac/Read Me First.txt
 
   release:
     # Only release builds get write access, to attach the zip to a release.
@@ -59,8 +61,11 @@ jobs:
         with:
           name: NTELightningCapture-mac
 
-      - name: Write checksum
-        run: sha256sum NTELightningCapture-mac.zip > NTELightningCapture-mac.zip.sha256
+      - name: Write checksum and name the Read Me for the release page
+        run: |
+          mv dist/NTELightningCapture-mac.zip .
+          mv "packaging/mac/Read Me First.txt" Read-Me-Mac.txt
+          sha256sum NTELightningCapture-mac.zip > NTELightningCapture-mac.zip.sha256
 
       - uses: softprops/action-gh-release@v2
         with:
@@ -73,3 +78,4 @@ jobs:
           files: |
             NTELightningCapture-mac.zip
             NTELightningCapture-mac.zip.sha256
+            Read-Me-Mac.txt

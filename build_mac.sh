@@ -27,7 +27,11 @@ pyinstaller --noconfirm --windowed --name "NTE Lightning Capture" \
 # Re-sign the whole bundle ad hoc so macOS sees one consistent signature.
 codesign --force --deep --sign - "dist/NTE Lightning Capture.app"
 
-rm -f dist/NTELightningCapture-mac.zip
-ditto -c -k --keepParent "dist/NTE Lightning Capture.app" dist/NTELightningCapture-mac.zip
+# The zip holds a folder with the app and a plain-text Read Me next to it.
+rm -rf "dist/NTE Lightning Capture" dist/NTELightningCapture-mac.zip
+mkdir "dist/NTE Lightning Capture"
+ditto "dist/NTE Lightning Capture.app" "dist/NTE Lightning Capture/NTE Lightning Capture.app"
+cp "packaging/mac/Read Me First.txt" "dist/NTE Lightning Capture/"
+ditto -c -k --keepParent "dist/NTE Lightning Capture" dist/NTELightningCapture-mac.zip
 echo
-echo "Built dist/NTE Lightning Capture.app (zipped: dist/NTELightningCapture-mac.zip)"
+echo "Built dist/NTE Lightning Capture.app (zipped with its Read Me: dist/NTELightningCapture-mac.zip)"

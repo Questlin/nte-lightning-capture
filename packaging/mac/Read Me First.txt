@@ -1,0 +1,97 @@
+NTE LIGHTNING CAPTURE FOR MAC (TEST VERSION)
+=============================================
+
+The app watches part of your screen while Neverness to Everness (NTE) is in
+photo mode, and presses the game's photo key the moment lightning strikes there.
+
+WARNING: Using this tool very likely breaks NTE's terms of use. NTE does not
+allow third-party programs or automation, and players report bans for using
+them. Your account could be suspended or banned. Use it at your own risk.
+This is an unofficial fan project, not made or supported by NTE's developers.
+
+You need: a Mac with Apple Silicon (M1 or newer), macOS 14 or newer, and NTE.
+
+
+1. INSTALL
+----------
+Drag "NTE Lightning Capture.app" into your Applications folder.
+
+
+2. OPEN IT THE FIRST TIME
+-------------------------
+Double-click the app. macOS says it can't check the app for malicious
+software, because it isn't signed with an Apple developer account.
+
+  - Click "Done".
+  - Open System Settings > Privacy & Security.
+  - Scroll down to the message about "NTE Lightning Capture" and click
+    "Open Anyway". Confirm with your password or Touch ID.
+
+You only need to do this once per version.
+
+
+3. ALLOW THE THREE PERMISSIONS
+------------------------------
+The app asks for these when it starts. In System Settings > Privacy &
+Security, turn on "NTE Lightning Capture" in each of these lists:
+
+  - Screen & System Audio Recording  (so it can see the game)
+  - Accessibility                    (so it can press the photo key)
+  - Input Monitoring                 (so the arm hotkey works in the game)
+
+Then quit the app (Command+Q) and open it again. If one is still missing,
+the app's window says which.
+
+
+4. CHOOSE WHERE TO LOOK FOR LIGHTNING
+-------------------------------------
+  - Start NTE, open photo mode (F9, active mode) and set the weather to rain.
+  - Switch to NTE Lightning Capture and click "Select regions on screen...".
+    The app hides and shows a screenshot of the game.
+  - Drag a rectangle over the sky where lightning appears. Keep it away from
+    your character, the screen edges and the on-screen controls.
+  - Press Return to save. (Esc cancels. Right-click or Control-click a
+    rectangle to delete it.)
+
+
+5. TAKE PHOTOS
+--------------
+  - Switch back to the game.
+  - Press fn+F6. A short sound means the app is armed.
+  - When lightning strikes inside your rectangle, the app presses F to take
+    the photo. By default it takes one photo and then stops.
+  - Press fn+F6 again to disarm.
+
+If NTE's photo key isn't F, change "Game's photo key/button" in the app
+first. To take more than one photo, tick "Debug options" and change
+"Stop after this many photos" (0 = no limit).
+
+
+IF IT DOESN'T WORK
+------------------
+No photo is taken:
+  Click "Test photo key", then switch to the game within 3 seconds. If no
+  photo is taken, set "Send the key as" to "Send to game only" and test
+  again. Also check that Accessibility is turned on (step 3).
+
+fn+F6 does nothing in the game:
+  Check Input Monitoring (step 3), or click "Arm" in the app instead.
+
+The screenshot is blank or only shows the desktop:
+  Check Screen & System Audio Recording (step 3), then quit and reopen.
+
+Lightning isn't detected, or it reacts to the wrong things:
+  Tick "Debug options" and click "Start watching". The bars under "Live
+  signal" show what the app sees. They should stay left of the red line
+  until lightning strikes. Move or shrink the rectangle if they don't.
+
+
+INSTALLING A NEW VERSION
+------------------------
+macOS treats each new version as a different app. In each of the three
+lists in step 3, select the old "NTE Lightning Capture", click the minus
+button to remove it, and then allow the new one.
+
+
+Settings are saved in:
+  ~/Library/Application Support/NTELightningCapture/config.json
