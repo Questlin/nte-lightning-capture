@@ -2,9 +2,10 @@ name: Build Mac app
 
 on:
   push:
-    branches: [main]
-    # v* tags release both apps; mac-test* tags publish a Mac-only pre-release.
-    tags: ["v*", "mac-test*"]
+    # Each push to mac-test publishes a Mac-only pre-release (tag mac-test-N);
+    # v* tags attach the Mac zip to the regular release.
+    branches: [main, mac-test]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -43,9 +44,9 @@ jobs:
           path: dist/NTELightningCapture-mac.zip
 
   release:
-    # Only tag builds get write access, to attach the zip to a release.
+    # Only release builds get write access, to attach the zip to a release.
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/mac-test'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -63,9 +64,12 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          prerelease: ${{ startsWith(github.ref_name, 'mac-test') }}
-          name: ${{ startsWith(github.ref_name, 'mac-test') && format('Mac test build ({0})', github.ref_name) || github.ref_name }}
-          body_path: ${{ startsWith(github.ref_name, 'mac-test') && '.github/mac-test-release.md' || '' }}
+          # On mac-test the release (and its tag) is created here, at this commit.
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('mac-test-{0}', github.run_number) }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ github.ref_type != 'tag' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || format('Mac test build {0}', github.run_number) }}
+          body_path: ${{ github.ref_type != 'tag' && '.github/mac-test-release.md' || '' }}
           files: |
             NTELightningCapture-mac.zip
             NTELightningCapture-mac.zip.sha256
