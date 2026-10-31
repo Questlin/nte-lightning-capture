@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import sys
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
@@ -150,7 +151,10 @@ class AppConfig:
 
 
 def config_path() -> Path:
-    base = os.environ.get("APPDATA") or str(Path.home() / ".config")
+    if sys.platform == "darwin":
+        base = str(Path.home() / "Library" / "Application Support")
+    else:
+        base = os.environ.get("APPDATA") or str(Path.home() / ".config")
     return Path(base) / "NTELightningCapture" / "config.json"
 
 

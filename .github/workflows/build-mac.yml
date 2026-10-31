@@ -1,0 +1,71 @@
+name: Build Mac app
+
+on:
+  push:
+    branches: [main]
+    # v* tags release both apps; mac-test* tags publish a Mac-only pre-release.
+    tags: ["v*", "mac-test*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Apple Silicon runner: NTE's Mac client only runs on Apple Silicon.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Build app
+        run: ./build_mac.sh --no-tests
+
+      - name: Check the built app starts and has its modules
+        run: |
+          "dist/NTE Lightning Capture.app/Contents/MacOS/NTE Lightning Capture" --self-test selftest.txt || status=$?
+          cat selftest.txt
+          exit ${status:-0}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NTELightningCapture-mac
+          path: dist/NTELightningCapture-mac.zip
+
+  release:
+    # Only tag builds get write access, to attach the zip to a release.
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: NTELightningCapture-mac
+
+      - name: Write checksum
+        run: sha256sum NTELightningCapture-mac.zip > NTELightningCapture-mac.zip.sha256
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ startsWith(github.ref_name, 'mac-test') }}
+          name: ${{ startsWith(github.ref_name, 'mac-test') && format('Mac test build ({0})', github.ref_name) || github.ref_name }}
+          body_path: ${{ startsWith(github.ref_name, 'mac-test') && '.github/mac-test-release.md' || '' }}
+          files: |
+            NTELightningCapture-mac.zip
+            NTELightningCapture-mac.zip.sha256

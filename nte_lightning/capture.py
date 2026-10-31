@@ -4,7 +4,8 @@
 new frame the moment Windows composes it, with no polling of unchanged
 frames, which is what makes single-frame lightning detection possible.
 ``mss`` (GDI) is a slower fallback for systems where DXGI duplication is not
-available.
+available. On macOS the backends live in maccapture (ScreenCaptureKit, with a
+Quartz snapshot fallback).
 
 All backends return frames as H x W x 4 uint8 arrays in BGRA order.
 """
@@ -12,6 +13,7 @@ All backends return frames as H x W x 4 uint8 arrays in BGRA order.
 from __future__ import annotations
 
 import re
+import sys
 import threading
 import time
 from dataclasses import dataclass
@@ -165,6 +167,13 @@ _OUTPUT_RE = re.compile(r"Device\[0\] Output\[(\d+)\]: Res:\((\d+), (\d+)\) Rot:
 
 
 def list_monitors() -> list[MonitorInfo]:
+    if sys.platform == "darwin":
+        try:
+            from . import maccapture
+
+            return maccapture.list_monitors()
+        except Exception:
+            return []
     try:
         import dxcam
 
@@ -189,9 +198,17 @@ def list_monitors() -> list[MonitorInfo]:
 def open_capture(monitor: int) -> Capture:
     """Open the fastest available backend for the given display."""
     errors = []
-    for cls in (DxcamCapture, MssCapture):
+    if sys.platform == "darwin":
+        from . import maccapture
+
+        backends = maccapture.BACKENDS
+    else:
+        backends = (DxcamCapture, MssCapture)
+    for cls in backends:
         try:
             return cls(monitor)
         except Exception as exc:  # backend missing or unsupported on this PC
+            if type(exc).__name__ == "PermissionMissing":
+                raise RuntimeError(str(exc)) from exc  # the same for every backend; say it once
             errors.append(f"{cls.name}: {exc}")
     raise RuntimeError("No screen capture backend works here. " + "; ".join(errors))

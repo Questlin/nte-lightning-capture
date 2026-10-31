@@ -18,17 +18,21 @@ from .engine import Engine, Event
 from .region_picker import RegionPicker
 from .winput import (
     INPUT_METHODS,
+    IS_MAC,
     IS_WINDOWS,
     KeyWatcher,
     all_input_names,
     blocked_by_admin,
     enable_dpi_awareness,
     foreground_app,
+    hide_app,
     is_valid_input,
     name_from_tk_event,
     RELAUNCHED_FLAG,
+    permission_problems,
     process_elevated,
     relaunch_as_admin,
+    show_app,
 )
 
 POLL_MS = 33
@@ -72,8 +76,16 @@ class App:
         self._refresh_regions()
         self._update_state_label()
         self.log(f"Ready. Shutter: {self.cfg.shutter_key}. Arm/disarm hotkey: {self.cfg.arm_hotkey}.")
-        if not IS_WINDOWS:
-            self.log("Note: not running on Windows, so photos cannot be triggered here.")
+        if IS_MAC:
+            for line in permission_problems():
+                self.log(line)
+            if self.cfg.arm_hotkey.startswith("F") and len(self.cfg.arm_hotkey) > 1:
+                self.log(
+                    f"On a Mac keyboard, press fn+{self.cfg.arm_hotkey} unless the F keys are set to work as standard "
+                    "function keys (System Settings > Keyboard)."
+                )
+        elif not IS_WINDOWS:
+            self.log("Note: not running on Windows or macOS, so photos cannot be triggered here.")
         elif not self.elevated:
             self.log("Not running as administrator, so if the game is, Windows will block the photo key.")
         root.after(POLL_MS, self._poll)
@@ -470,6 +482,8 @@ class App:
             self._set_armed(False)
             self.log("Disarmed while selecting regions.")
         self.root.withdraw()
+        if IS_MAC:
+            hide_app()  # hiding the window alone leaves this app in front on macOS
         # With this window hidden, the game is normally the one in front.
         self.root.after(350, self._learn_game)
         if self.engine.running:
@@ -483,7 +497,10 @@ class App:
         frame = None
         try:
             cap = open_capture(self.cfg.monitor)
-            frame = cap.grab_full_blocking()
+            try:
+                frame = cap.grab_full_blocking()
+            finally:
+                cap.close()
         except Exception as exc:
             self.log(f"Could not take a screenshot: {exc}")
         self._open_picker(frame)
@@ -494,6 +511,8 @@ class App:
             self._open_picker(None)
 
     def _open_picker(self, frame) -> None:
+        if IS_MAC:
+            show_app()
         if frame is not None:
             image = Image.fromarray(frame[..., 2::-1].copy())
             self.preview_image = image
@@ -692,7 +711,7 @@ def main() -> None:
     enable_dpi_awareness()
     root = tk.Tk()
     try:
-        ttk.Style(root).theme_use("vista" if IS_WINDOWS else "clam")
+        ttk.Style(root).theme_use("vista" if IS_WINDOWS else "aqua" if IS_MAC else "clam")
     except tk.TclError:
         pass
     App(root)

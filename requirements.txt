@@ -2,3 +2,10 @@ numpy>=1.26
 pillow>=10.0
 dxcam>=0.3.0 ; sys_platform == "win32"
 mss>=9.0
+# macOS: screen capture (ScreenCaptureKit), key presses (Quartz) and app focus (AppKit)
+pyobjc-framework-Quartz>=10.3 ; sys_platform == "darwin"
+pyobjc-framework-Cocoa>=10.3 ; sys_platform == "darwin"
+pyobjc-framework-ApplicationServices>=10.3 ; sys_platform == "darwin"
+pyobjc-framework-ScreenCaptureKit>=10.3 ; sys_platform == "darwin"
+pyobjc-framework-CoreMedia>=10.3 ; sys_platform == "darwin"
+pyobjc-framework-libdispatch>=10.3 ; sys_platform == "darwin"

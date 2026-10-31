@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import math
 import queue
+import sys
 import threading
 import time
 from dataclasses import dataclass, field
@@ -18,6 +19,7 @@ from .capture import Capture, open_capture
 from .config import ALL_REGIONS_WINDOW_S, AppConfig, Region
 from .detector import RegionDetector
 from .winput import (
+    DIRECT_METHOD,
     InputSender,
     PressResult,
     blocked_by_admin,
@@ -364,9 +366,10 @@ class Engine:
     def _switch_to(cfg: AppConfig) -> str:
         """The game to switch to for photos, or "" to press in whatever has focus.
 
-        Window messages go straight to the game's window and need no focus.
+        Window messages (Windows) and "Send to game only" (macOS) go straight
+        to the game and need no focus.
         """
-        if cfg.background_photos and cfg.input_method != "Window message":
+        if cfg.background_photos and cfg.input_method != DIRECT_METHOD:
             return cfg.game_exe
         return ""
 
@@ -416,6 +419,18 @@ class Engine:
                 base.parent.mkdir(parents=True, exist_ok=True)
                 raw, marked = save_detection(frame, marks, base)
                 self.events.put(Event("info", f"Saved detected frame: {raw.name} (and {marked.name} with the spot boxed)"))
+            except PermissionError as exc:
+                if sys.platform == "darwin":
+                    hint = (
+                        "macOS may be blocking the folder (Desktop, Documents and Downloads need permission); "
+                        "pick another folder or allow this app in System Settings > Privacy & Security > Files and Folders."
+                    )
+                else:
+                    hint = (
+                        "Windows may be blocking the folder (Controlled folder access protects Pictures and Documents); "
+                        "pick another folder or allow this app in Windows Security."
+                    )
+                self.events.put(Event("warn", f"Could not save frame: {exc}. {hint}"))
             except Exception as exc:
                 self.events.put(Event("warn", f"Could not save frame: {exc}"))
 

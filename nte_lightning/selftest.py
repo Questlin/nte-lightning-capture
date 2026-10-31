@@ -1,6 +1,6 @@
 """``--self-test``: checks that a build has everything it needs.
 
-Used by CI on the packaged .exe, and handy for bug reports: it writes a short
+Used by CI on the packaged .exe and Mac app, and handy for bug reports: it writes a short
 report (to the given file, or stdout) and exits non-zero only when a required
 module is missing.
 """
@@ -31,7 +31,21 @@ def run(report_path: str | None = None) -> int:
     if sys.platform == "win32":
         check("dxcam", lambda: __import__("dxcam").__name__)
         check("winput", lambda: __import__("nte_lightning.winput", fromlist=["x"]).INPUT.__name__)
-    check("mss", lambda: __import__("mss").__name__, required=sys.platform != "win32")
+    if sys.platform == "darwin":
+        for mod in ("Quartz", "AppKit", "ApplicationServices", "ScreenCaptureKit", "CoreMedia", "dispatch"):
+            check(mod, lambda mod=mod: __import__(mod).__name__)
+        check("key events", lambda: repr(__import__("nte_lightning.macinput", fromlist=["x"]).make_key_event("F", True)))
+
+        def permissions():
+            from . import macinput
+
+            return (
+                f"screen recording {macinput.screen_recording_allowed()}, "
+                f"accessibility {macinput.accessibility_allowed()}, input monitoring {macinput.key_reading_allowed()}"
+            )
+
+        check("permissions", permissions, required=False)
+    check("mss", lambda: __import__("mss").__name__, required=sys.platform not in ("win32", "darwin"))
     check("app modules", lambda: __import__("nte_lightning.app", fromlist=["x"]).App.__name__)
 
     def capture():
@@ -39,9 +53,12 @@ def run(report_path: str | None = None) -> int:
 
         mons = list_monitors()
         cap = open_capture(mons[0].index if mons else 0)
-        t = time.perf_counter()
-        frame = cap.grab_full_blocking(timeout_s=1.0)
-        took = (time.perf_counter() - t) * 1000
+        try:
+            t = time.perf_counter()
+            frame = cap.grab_full_blocking(timeout_s=1.0)
+            took = (time.perf_counter() - t) * 1000
+        finally:
+            cap.close()
         shape = None if frame is None else frame.shape
         return f"{[m.label for m in mons]} via {cap.name}, first frame {shape} in {took:.0f} ms"
 

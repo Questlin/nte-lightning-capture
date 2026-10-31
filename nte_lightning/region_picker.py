@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 import tkinter as tk
 from typing import Callable
 
@@ -47,6 +48,11 @@ class RegionPicker:
         canvas.bind("<B1-Motion>", self._on_drag)
         canvas.bind("<ButtonRelease-1>", self._on_release)
         canvas.bind("<Button-3>", self._on_delete)
+        if sys.platform == "darwin":
+            # Tk on macOS reports the right button as button 2; Control-click
+            # is the usual right-click on a trackpad without a secondary click.
+            canvas.bind("<Button-2>", self._on_delete)
+            canvas.bind("<Control-Button-1>", self._on_delete)
         top.bind("<Return>", lambda e: self._finish(True))
         top.bind("<KP_Enter>", lambda e: self._finish(True))
         top.bind("<Escape>", lambda e: self._finish(False))

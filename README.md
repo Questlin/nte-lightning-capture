@@ -27,8 +27,26 @@ By default the app disarms itself after one photo. To keep going, tick **Debug o
 
 If NTE's photo key isn't **F**, change **Game's photo key/button** in the app before arming. The app only watches while the game window is in front, and pauses when you switch away.
 
-Settings are saved to `%APPDATA%\NTELightningCapture\config.json`.
+Settings are saved to `%APPDATA%\NTELightningCapture\config.json` on Windows.
+
+## Mac (test version)
+
+A test build for Apple Silicon Macs (M1 or later, macOS 14 or newer, the same Macs NTE's Mac client runs on) is on the [Releases](../../releases) page as a **pre-release**: `NTELightningCapture-mac.zip`. It has not been tried with the game much yet.
+
+1. **Install.** Unzip it and drag **NTE Lightning Capture.app** to Applications.
+2. **First launch.** The app isn't signed with an Apple Developer ID, so macOS says it can't verify it. Click **Done**, open System Settings > Privacy & Security, scroll down and click **Open Anyway** next to the message about NTE Lightning Capture, then confirm. (Or in Terminal: `xattr -dr com.apple.quarantine "/Applications/NTE Lightning Capture.app"`.)
+3. **Permissions.** macOS asks for three. Allow each one in System Settings > Privacy & Security, then quit and reopen the app:
+   - **Screen & System Audio Recording**, so the app can see the game.
+   - **Accessibility**, so it can press the photo key.
+   - **Input Monitoring**, so the arm hotkey works while the game is in front (the **Arm** button works without it).
+
+   The app's log lists any that are still missing. Each new version needs them again: remove the old entry with the minus button in each list, then allow the new one.
+4. **Use it** as described above. On a Mac keyboard, press **fn+F6** to arm, unless your F keys are set to work as standard function keys. To delete a region while selecting, right-click or Control-click it.
+
+**Please check, and report back:** (1) **Select regions on screen…** shows a screenshot of the game, (2) **Start watching** with **Debug options** ticked shows the live signal moving and 30 fps or more in the status line, (3) **Test photo key** takes a photo in NTE (if not, try **Send the key as: Send to game only**), and (4) the arm hotkey works from inside the game.
+
+Mac settings are saved to `~/Library/Application Support/NTELightningCapture/config.json`.
 
 ## Run from source
 
-Install Python 3.11 or newer, then double-click `run_from_source.bat`. `build.bat` builds the .exe.
+Install Python 3.11 or newer, then double-click `run_from_source.bat` (Windows) or `run_from_source.command` (Mac). `build.bat` builds the .exe and `build_mac.sh` the Mac app.

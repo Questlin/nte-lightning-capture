@@ -1,7 +1,8 @@
 """Windows input and system helpers (SendInput, hotkeys, focus, sounds).
 
-Everything here degrades to harmless no-ops on other platforms so the rest of
-the app can be imported and tested anywhere.
+On macOS the same names come from macinput (imported at the end of this
+file). Everything here degrades to harmless no-ops on other platforms so the
+rest of the app can be imported and tested anywhere.
 """
 
 from __future__ import annotations
@@ -12,9 +13,11 @@ import os
 import sys
 import threading
 import time
-from dataclasses import dataclass
+
+from .inputcommon import FOCUS_SETTLE_S, PressResult  # noqa: F401  (PressResult is re-exported)
 
 IS_WINDOWS = sys.platform == "win32"
+IS_MAC = sys.platform == "darwin"
 
 # --------------------------------------------------------------------------
 # Key names
@@ -275,10 +278,6 @@ if IS_WINDOWS:
 # --------------------------------------------------------------------------
 
 
-@dataclass
-class PressResult:
-    ok: bool
-    message: str = ""
 
 
 def foreground_pid() -> int | None:
@@ -447,9 +446,6 @@ def _bring_to_front(hwnd: int) -> bool:
     return user32.GetForegroundWindow() == hwnd
 
 
-# Time the game gets to notice it has focus before the key goes down, and
-# to read the last key release before focus goes back.
-FOCUS_SETTLE_S = 0.1
 
 
 @contextlib.contextmanager
@@ -504,6 +500,8 @@ def process_elevated(pid: int | None = None) -> bool | None:
 
 # Ways of sending the photo key, as shown in the UI.
 INPUT_METHODS = ["Scan code", "Virtual key", "Window message"]
+# The method that goes straight to the game's window and needs no focus.
+DIRECT_METHOD = "Window message"
 
 # Mouse button -> (down message, up message, wParam) for window messages.
 _MOUSE_MESSAGES = {
@@ -683,3 +681,53 @@ def play_sound(kind: str) -> None:
                 return
 
     threading.Thread(target=run, daemon=True).start()
+
+
+def hide_app() -> None:
+    """Only needed on macOS (see macinput); Windows hides the window itself."""
+
+
+def show_app() -> None:
+    """Only needed on macOS (see macinput)."""
+
+
+def permission_problems() -> list[str]:
+    """Missing system permissions, as lines for the log (macOS only)."""
+    return []
+
+
+# --------------------------------------------------------------------------
+# macOS: the same names, implemented with Quartz and AppKit
+# --------------------------------------------------------------------------
+
+if IS_MAC:
+    from .macinput import (  # noqa: E402,F401  (replace the Windows versions)
+        DIRECT_METHOD,
+        INPUT_METHODS,
+        KEY_NAMES,
+        MOUSE_BUTTONS,
+        RELAUNCHED_FLAG,
+        InputSender,
+        KeyWatcher,
+        all_input_names,
+        blocked_by_admin,
+        enable_dpi_awareness,
+        find_game_window,
+        foreground_app,
+        foreground_pid,
+        foreground_title,
+        game_focus,
+        game_in_front,
+        game_visible,
+        hide_app,
+        high_resolution_timer,
+        is_valid_input,
+        name_from_tk_event,
+        own_window_focused,
+        play_sound,
+        process_elevated,
+        relaunch_as_admin,
+        show_app,
+        vk_for,
+    )
+    from .macinput import request_permissions as permission_problems  # noqa: E402,F811
